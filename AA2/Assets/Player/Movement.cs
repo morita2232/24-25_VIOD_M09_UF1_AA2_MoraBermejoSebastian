@@ -25,6 +25,6 @@ public class Movement : MonoBehaviour
 
         transform.position +=
             Vector3.ProjectOnPlane(cam.transform.right, Vector3.up).normalized
-            * dir.x * speed * Time.fixedDeltaTime;
+            * dir.x * (speed * 0.75f) * Time.fixedDeltaTime;
     }
 }

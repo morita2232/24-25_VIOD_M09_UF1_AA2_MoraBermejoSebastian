@@ -3,16 +3,16 @@ using UnityEngine;
 public class PickUp : MonoBehaviour
 {
     [Header("Configuración")]
-    [Tooltip("Distancia máxima para recoger un objeto")]
-    public float pickupRange = 2f;
+    
+    public float pickupRange = 10f;
 
-    [Tooltip("Distancia a la que se mantiene el objeto al recogerlo")]
-    public float holdDistance = 2f;
+    
+    public float holdDistance = 5f;
 
-    [Tooltip("Máscara de capa que define qué objetos se pueden recoger")]
+    
     public LayerMask pickupMask;
 
-    [Tooltip("Velocidad de interpolación al mantener el objeto")]
+    
     public float holdSmoothness = 10f;
 
     private Camera mainCamera;
@@ -21,18 +21,29 @@ public class PickUp : MonoBehaviour
 
     private InputSystem_Actions inputs;
     private bool isHoldingInput;
+    private Vector2 isScrollingInput;
+    Vector3 targetPosition;
+    RaycastHit hit;
+    private Vector3 lastHeldPosition;
+
+    private Vector3 lastHeldVelocity;
+
+
+
 
     private void Awake()
     {
         mainCamera = Camera.main;
         inputs = new InputSystem_Actions();
         inputs.Enable();
+        
+
     }
 
     private void Update()
     {
         // Leer el estado del clic derecho del nuevo Input System
-        isHoldingInput = inputs.Player.Interact.ReadValue<float>() > 0f; // Asegúrate que "Interact" esté vinculado al botón derecho
+        isHoldingInput = inputs.Player.Interact.ReadValue<float>() > 0f;
 
         if (heldObject == null)
         {
@@ -42,8 +53,16 @@ public class PickUp : MonoBehaviour
         else
         {
             // Si tenemos uno cogido, lo mantenemos o lo soltamos
-            if (isHoldingInput)
+            if (isHoldingInput) {
+                targetPosition = mainCamera.transform.position + mainCamera.transform.forward * originalDistance;
+                lastHeldPosition = heldObject.position;
+
                 HoldObject();
+
+                Vector3 currentPos = heldObject.position;
+                lastHeldVelocity = (currentPos - lastHeldPosition) / Time.deltaTime;
+                lastHeldPosition = currentPos;
+            }
             else
                 DropObject();
         }
@@ -53,7 +72,7 @@ public class PickUp : MonoBehaviour
     {
         if (!isHoldingInput) return;
 
-        RaycastHit hit;
+        
         Vector3 origin = mainCamera.transform.position;
         Vector3 direction = mainCamera.transform.forward;
 
@@ -74,20 +93,48 @@ public class PickUp : MonoBehaviour
     }
 
     private void HoldObject()
-    {
+    {            
+
+        Debug.Log("COGIDO");
+        isScrollingInput = inputs.UI.ScrollWheel.ReadValue<Vector2>();
+
         if (heldObject == null) return;
 
-        Vector3 targetPosition = mainCamera.transform.position + mainCamera.transform.forward * originalDistance;
+            Debug.Log(isScrollingInput);
+        
         heldObject.MovePosition(Vector3.Lerp(heldObject.position, targetPosition, Time.deltaTime * holdSmoothness));
+
+        if (isScrollingInput.y > 0)
+        {
+            originalDistance += 1;
+            heldObject.MovePosition(Vector3.Lerp(heldObject.position, targetPosition, Time.deltaTime * holdSmoothness));
+            Debug.Log("scroll +");
+        }
+        else if (isScrollingInput.y < 0)
+        {
+            Debug.Log("scroll -");
+            
+            originalDistance -= 1;
+            if (originalDistance < hit.distance)
+            {
+                originalDistance = hit.distance;
+            }
+            heldObject.MovePosition(Vector3.Lerp(heldObject.position, targetPosition, Time.deltaTime * holdSmoothness));
+        }
     }
 
     private void DropObject()
     {
         if (heldObject == null) return;
 
+        Rigidbody rb = heldObject.GetComponent<Rigidbody>();
+
         heldObject.useGravity = true;
+        rb.linearVelocity = lastHeldVelocity;
+
         heldObject = null;
     }
+
 
     private void OnDrawGizmos()
     {
@@ -96,6 +143,7 @@ public class PickUp : MonoBehaviour
         Gizmos.color = Color.cyan;
         Gizmos.DrawLine(mainCamera.transform.position,
                         mainCamera.transform.position + mainCamera.transform.forward * pickupRange);
+        Gizmos.DrawWireSphere(targetPosition, 1);
     }
 }
 
