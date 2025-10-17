@@ -2,6 +2,7 @@ using UnityEngine;
 
 public class GroundDetection : MonoBehaviour
 {
+
     public Vector3 offset;
     public float radius;
     public float distance;
@@ -12,7 +13,8 @@ public class GroundDetection : MonoBehaviour
     {
         RaycastHit hit;
 
-        if(Physics.SphereCast(transform.position + offset, radius, Vector3.down, out hit, distance, mask))
+        if (Physics.SphereCast(transform.position + offset,
+            radius, Vector3.down, out hit, distance, mask))
         {
             grounded = true;
         }
@@ -20,16 +22,17 @@ public class GroundDetection : MonoBehaviour
         {
             grounded = false;
         }
-
     }
+
 
     private void OnDrawGizmos()
     {
+        //Inicial
         Gizmos.DrawWireSphere(transform.position + offset, radius);
-        
-        
-        Gizmos.DrawWireSphere((transform.position + offset) + Vector3.down * distance, radius);
 
+        //Final
+        Gizmos.DrawWireSphere((transform.position + offset)
+            + Vector3.down * distance, radius);
     }
 
 }
