@@ -19,9 +19,31 @@ public class Movement : MonoBehaviour
     {
         Vector2 dir = inputs.Player.Move.ReadValue<Vector2>();
 
-        transform.position +=
+
+        if(dir.y < 0)
+        {
+
+            transform.position +=
             Vector3.ProjectOnPlane(cam.transform.forward, Vector3.up).normalized
-            * dir.y * speed * Time.fixedDeltaTime;
+            * dir.y * (speed * 0.5f) * Time.fixedDeltaTime;
+        }
+        else
+        {
+            if(inputs.Player.Sprint.IsPressed())
+            {
+                transform.position +=
+            Vector3.ProjectOnPlane(cam.transform.forward, Vector3.up).normalized
+            * dir.y * (speed * 2f) * Time.fixedDeltaTime;
+            }
+            else
+            {
+                transform.position +=
+                    Vector3.ProjectOnPlane(cam.transform.forward, Vector3.up).normalized
+                    * dir.y * speed * Time.fixedDeltaTime;
+
+            }
+
+        }
 
         transform.position +=
             Vector3.ProjectOnPlane(cam.transform.right, Vector3.up).normalized
