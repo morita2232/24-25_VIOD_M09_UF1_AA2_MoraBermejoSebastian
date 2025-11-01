@@ -1,9 +1,7 @@
 using UnityEngine;
 
 public class PickUp : MonoBehaviour
-{
-    [Header("Configuración")]
-    
+{    
     public float pickupRange = 10f;
 
     
@@ -42,17 +40,14 @@ public class PickUp : MonoBehaviour
 
     private void Update()
     {
-        // Leer el estado del clic derecho del nuevo Input System
         isHoldingInput = inputs.Player.Interact.ReadValue<float>() > 0f;
 
         if (heldObject == null)
         {
-            // Si no tenemos objeto en la mano, intentamos coger uno
             TryPickup();
         }
         else
         {
-            // Si tenemos uno cogido, lo mantenemos o lo soltamos
             if (isHoldingInput) {
                 targetPosition = mainCamera.transform.position + mainCamera.transform.forward * originalDistance;
                 lastHeldPosition = heldObject.position;

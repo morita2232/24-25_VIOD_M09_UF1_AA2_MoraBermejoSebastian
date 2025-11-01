@@ -21,12 +21,10 @@ public class CameraController : MonoBehaviour
     {
         Vector2 look = inputs.Player.Move.ReadValue<Vector2>();
         pivot.localEulerAngles += new Vector3(look.y, look.x, 0) * sensitivity * Time.deltaTime;
-        Debug.DrawRay(pivot.position, -pivot.forward * distance, Color.red);
 
         RaycastHit hit;
         if (Physics.Raycast(pivot.position, -pivot.forward, out hit, distance))
-        {
-            Debug.DrawRay(pivot.position, -pivot.forward * hit.distance, Color.green);
+        {           
             transform.localPosition = new Vector3(0, minY, -hit.distance);
         }
         else
